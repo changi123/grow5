@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuth, signOut } from "firebase/auth";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -7,178 +8,263 @@ export default function Home() {
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
 
+  const auth = getAuth();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      console.log("로그아웃 완료");
+      navigate("/login");
+      setMenuOpen(false);
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+      alert("로그아웃 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
-    <>
-      {/* 햄버거 아이콘 */}
+    <div className="home-container">
+      <style>{`
+        .home-container {
+          position: relative;
+          min-height: 100vh;
+          background-color: #f5f5f5;
+          font-family: sans-serif;
+        }
+
+        .hamburger-button {
+          position: fixed;
+          top: 16px;
+          right: 16px;
+          z-index: 1000;
+          background: none;
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+        }
+
+        .overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.3);
+          z-index: 900;
+        }
+
+        .side-menu {
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 240px;
+          height: 100%;
+          background-color: white;
+          box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
+          z-index: 1000;
+          transform: translateX(100%);
+          transition: transform 0.3s ease-in-out;
+        }
+
+        .side-menu.open {
+          transform: translateX(0);
+        }
+
+        .side-menu-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px;
+          border-bottom: 1px solid #ddd;
+        }
+
+        .logo {
+          font-size: 20px;
+          font-weight: bold;
+        }
+
+        .close-button {
+          background: none;
+          border: none;
+          font-size: 20px;
+          cursor: pointer;
+        }
+
+        .side-menu-content {
+          display: flex;
+          flex-direction: column;
+          padding: 16px;
+        }
+
+        .menu-link {
+          background: none;
+          border: none;
+          text-align: left;
+          padding: 8px 0;
+          font-size: 16px;
+          color: #333;
+          cursor: pointer;
+        }
+
+        .menu-link:hover {
+          color: #000;
+        }
+
+        .main-content {
+          max-width: 420px;
+          margin: 0 auto;
+          padding: 48px 16px;
+        }
+
+        .title {
+          text-align: center;
+          font-size: 28px;
+          font-weight: bold;
+          margin-bottom: 8px;
+          color: #222;
+        }
+
+        .subtitle {
+          text-align: center;
+          color: #777;
+          margin-bottom: 24px;
+        }
+
+        .card-list {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .card {
+          background-color: #fff;
+          border-radius: 12px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          padding: 20px;
+        }
+
+        .card-title {
+          font-size: 18px;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+
+        .card-description {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 16px;
+        }
+
+        .card-button {
+          background-color: #333;
+          color: #fff;
+          padding: 10px 16px;
+          font-size: 14px;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+        }
+
+        .card-button:hover {
+          background-color: #555;
+        }
+      `}</style>
+
+      {/* 햄버거 버튼 */}
       <button
+        className="hamburger-button"
         onClick={toggleMenu}
-        aria-label="메뉴 열기"
-        style={styles.hamburgerBtn}
+        aria-label="Toggle menu"
       >
-        <div
-          style={{
-            ...styles.bar,
-            transform: menuOpen ? "rotate(45deg) translate(5px, 5px)" : "none",
-          }}
-        />
-        <div style={{ ...styles.bar, opacity: menuOpen ? 0 : 1 }} />
-        <div
-          style={{
-            ...styles.bar,
-            transform: menuOpen
-              ? "rotate(-45deg) translate(6px, -6px)"
-              : "none",
-          }}
-        />
+        🍔
       </button>
 
-      {/* 슬라이드 메뉴 */}
-      <nav
-        style={{
-          ...styles.sideMenu,
-          left: menuOpen ? 0 : "-250px",
-        }}
-      >
-        <h2 style={{ marginBottom: 24, color: "#fff" }}>Grow5 메뉴</h2>
-        <button
-          style={styles.menuItem}
-          onClick={() => {
-            navigate("/login");
-            setMenuOpen(false);
-          }}
-        >
-          🔑 로그인
-        </button>
-        <button
-          style={styles.menuItem}
-          onClick={() => {
-            navigate("/mypage");
-            setMenuOpen(false);
-          }}
-        >
-          👤 마이페이지
-        </button>
-        <button
-          style={styles.menuItem}
-          onClick={() => {
-            navigate("/settings");
-            setMenuOpen(false);
-          }}
-        >
-          ⚙️ 설정
-        </button>
-      </nav>
+      {/* 오버레이 */}
+      {menuOpen && (
+        <div className="overlay" onClick={() => setMenuOpen(false)}></div>
+      )}
 
-      {/* 메인 화면 */}
-      <main style={styles.mainContainer}>
-        <h1 style={styles.title}>Grow5</h1>
-        <p style={styles.subtitle}>
-          하루 5분, 당신의 성장을 돕는 짧은 지식 피드 앱입니다.
+      {/* 사이드 메뉴 */}
+      <div className={`side-menu ${menuOpen ? "open" : ""}`}>
+        <div className="side-menu-header">
+          <h2 className="logo">Grow5</h2>
+          <button onClick={() => setMenuOpen(false)} className="close-button">
+            ←
+          </button>
+        </div>
+        <div className="side-menu-content">
+          <button
+            className="menu-link"
+            onClick={() => {
+              navigate("/login");
+              setMenuOpen(false);
+            }}
+          >
+            🔑 로그인
+          </button>
+          <button
+            className="menu-link"
+            onClick={() => {
+              navigate("/mypage");
+              setMenuOpen(false);
+            }}
+          >
+            👤 마이페이지
+          </button>
+          <button className="menu-link" onClick={handleLogout}>
+            🚪 로그아웃
+          </button>
+        </div>
+      </div>
+
+      {/* 메인 콘텐츠 */}
+      <main className="main-content">
+        <h1 className="title">Grow5</h1>
+        <p className="subtitle">
+          하루 5분, 당신의 성장을 돕는 짧은 지식 피드 앱
         </p>
 
-        <button
-          onClick={() => navigate("/categories")}
-          style={styles.mainButton}
-        >
-          🔖 관심 카테고리 설정하러 가기
-        </button>
+        <div className="card-list">
+          <div className="card">
+            <h3 className="card-title">📚 관심 카테고리 설정</h3>
+            <p className="card-description">
+              관심 있는 분야를 선택하면 맞춤 콘텐츠를 추천해드려요.
+            </p>
+            <button
+              onClick={() => navigate("/categories")}
+              className="card-button"
+            >
+              바로가기 →
+            </button>
+          </div>
 
-        <button
-          onClick={() => navigate("/recommend")}
-          style={styles.mainButton}
-        >
-          🎲 추천 받으러 가기
-        </button>
+          <div className="card">
+            <h3 className="card-title">🎯 오늘의 추천 피드</h3>
+            <p className="card-description">
+              지금 내 취향에 맞는 지식을 추천받아 보세요.
+            </p>
+            <button
+              onClick={() => navigate("/recommend")}
+              className="card-button"
+            >
+              바로가기 →
+            </button>
+          </div>
 
-        <button
-          onClick={() => navigate("/favorites")}
-          style={styles.mainButton}
-        >
-          ⭐ 찜한 콘텐츠 보러 가기
-        </button>
+          <div className="card">
+            <h3 className="card-title">⭐ 찜한 콘텐츠</h3>
+            <p className="card-description">
+              저장해둔 콘텐츠를 한눈에 확인해 보세요.
+            </p>
+            <button
+              onClick={() => navigate("/favorites")}
+              className="card-button"
+            >
+              바로가기 →
+            </button>
+          </div>
+        </div>
       </main>
-    </>
+    </div>
   );
 }
-
-const styles = {
-  hamburgerBtn: {
-    position: "fixed",
-    top: 20,
-    left: 20,
-    width: 30,
-    height: 25,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    background: "transparent",
-    border: "none",
-    cursor: "pointer",
-    zIndex: 1001,
-  },
-  bar: {
-    height: 4,
-    width: 30,
-    backgroundColor: "#4caf50",
-    borderRadius: 2,
-    transition: "all 0.3s ease",
-  },
-  sideMenu: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: 250,
-    height: "100vh",
-    background: "linear-gradient(180deg, #4caf50 0%, #81c784 100%)",
-    padding: 20,
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    zIndex: 1000,
-    transition: "left 0.3s ease",
-  },
-  menuItem: {
-    background: "transparent",
-    border: "none",
-    color: "#fff",
-    fontSize: 18,
-    padding: "12px 0",
-    textAlign: "left",
-    cursor: "pointer",
-  },
-  mainContainer: {
-    maxWidth: 400,
-    margin: "60px auto 20px", // 햄버거 높이 + 여백 고려
-    padding: 20,
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    background: "linear-gradient(135deg, #e8f5e9, #c8e6c9)",
-    borderRadius: 12,
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-  },
-  title: {
-    textAlign: "center",
-    color: "#2e7d32",
-    fontSize: 32,
-    fontWeight: "700",
-  },
-  subtitle: {
-    textAlign: "center",
-    color: "#4caf50",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  mainButton: {
-    padding: "14px 20px",
-    fontSize: 18,
-    borderRadius: 10,
-    border: "none",
-    backgroundColor: "#66bb6a",
-    color: "white",
-    cursor: "pointer",
-    boxShadow: "0 4px 8px rgba(102, 187, 106, 0.5)",
-    transition: "background-color 0.3s ease",
-  },
-};
