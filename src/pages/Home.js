@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
-
+//
 export default function Home() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
