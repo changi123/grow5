@@ -1,21 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAuth, signOut } from "firebase/auth";
-//
+import { getAuth, signOut, onAuthStateChanged } from "firebase/auth";
+
 export default function Home() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const auth = getAuth();
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
 
-  const auth = getAuth();
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+    });
+    return () => unsubscribe();
+  }, [auth]);
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      console.log("로그아웃 완료");
-      navigate("/login");
       setMenuOpen(false);
+      await signOut(auth);
+      setIsLoggedIn(false);
+      navigate("/login");
     } catch (error) {
       console.error("로그아웃 실패:", error);
       alert("로그아웃 중 오류가 발생했습니다.");
@@ -163,6 +170,7 @@ export default function Home() {
           border: none;
           border-radius: 6px;
           cursor: pointer;
+          transition: background-color 0.2s ease;
         }
 
         .card-button:hover {
@@ -176,7 +184,7 @@ export default function Home() {
         onClick={toggleMenu}
         aria-label="Toggle menu"
       >
-        🍔
+        ☰
       </button>
 
       {/* 오버레이 */}
@@ -193,27 +201,32 @@ export default function Home() {
           </button>
         </div>
         <div className="side-menu-content">
-          <button
-            className="menu-link"
-            onClick={() => {
-              navigate("/login");
-              setMenuOpen(false);
-            }}
-          >
-            🔑 로그인
-          </button>
-          <button
-            className="menu-link"
-            onClick={() => {
-              navigate("/mypage");
-              setMenuOpen(false);
-            }}
-          >
-            👤 마이페이지
-          </button>
-          <button className="menu-link" onClick={handleLogout}>
-            🚪 로그아웃
-          </button>
+          {!isLoggedIn ? (
+            <button
+              className="menu-link"
+              onClick={() => {
+                navigate("/login");
+                setMenuOpen(false);
+              }}
+            >
+              🔑 로그인
+            </button>
+          ) : (
+            <>
+              <button
+                className="menu-link"
+                onClick={() => {
+                  navigate("/mypage");
+                  setMenuOpen(false);
+                }}
+              >
+                👤 마이페이지
+              </button>
+              <button className="menu-link" onClick={handleLogout}>
+                🚪 로그아웃
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -239,7 +252,7 @@ export default function Home() {
           </div>
 
           <div className="card">
-            <h3 className="card-title">🎯 오늘의 추천 피드</h3>
+            <h3 className="card-title">🎯 추천 피드</h3>
             <p className="card-description">
               지금 내 취향에 맞는 지식을 추천받아 보세요.
             </p>

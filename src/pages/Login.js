@@ -1,16 +1,18 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { auth, googleProvider } from "../firebase";
 import {
   signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-//
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,10 +20,12 @@ export default function Login() {
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
-        alert("로그인 성공!");
+        // alert("로그인 성공!");  // 삭제
+        navigate("/"); // 홈으로 이동
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
-        alert("회원가입 성공!");
+        // alert("회원가입 성공!");  // 삭제
+        navigate("/"); // 회원가입 후 홈으로 이동
       }
     } catch (error) {
       setError(error.message);
@@ -31,7 +35,8 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
-      alert("Google 로그인 성공!");
+      // alert("Google 로그인 성공!");  // 삭제
+      navigate("/");
     } catch (error) {
       setError(error.message);
     }
@@ -82,7 +87,6 @@ export default function Login() {
 }
 
 const styles = {
-  // 기존 스타일 동일
   container: {
     height: "100vh",
     display: "flex",
